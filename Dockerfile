@@ -40,11 +40,20 @@ ENV ROBOT_FRAMEWORK_VERSION 3.2.2
 ENV SELENIUM_LIBRARY_VERSION 4.5.0
 ENV SSH_LIBRARY_VERSION 3.5.1
 ENV XVFB_VERSION 1.20
+ENV XLRD_VERSION 1.1.0
 
 # Prepare binaries to be executed
 COPY bin/chromedriver.sh /opt/robotframework/bin/chromedriver
 COPY bin/chromium-browser.sh /opt/robotframework/bin/chromium-browser
 COPY bin/run-tests-in-virtual-screen.sh /opt/robotframework/bin/
+
+RUN apk update \
+&& apk upgrade \
+&& apk add --no-cache bash \
+&& apk add --no-cache --virtual=build-dependencies unzip \
+&& apk add --no-cache curl \
+&& apk add --no-cache git \
+&& apk add --no-cache openjdk8-jre
 
 # Install system dependencies
 RUN apk update \
@@ -80,6 +89,7 @@ RUN apk update \
     robotframework-requests==$REQUESTS_VERSION \
     robotframework-seleniumlibrary==$SELENIUM_LIBRARY_VERSION \
     robotframework-sshlibrary==$SSH_LIBRARY_VERSION \
+    xlrd==$XLRD_VERSION \
     PyYAML \
 
 # Download the glibc package for Alpine Linux from its GitHub repository
@@ -100,7 +110,6 @@ RUN apk update \
     && rm geckodriver-$GECKO_DRIVER_VERSION-linux64.tar.gz \
 
   && apk del --no-cache --update-cache .build-deps
-
 # Create the default report and work folders with the default user to avoid runtime issues
 # These folders are writeable by anyone, to ensure the user can be changed on the command line.
 RUN mkdir -p ${ROBOT_REPORTS_DIR} \
@@ -125,4 +134,4 @@ USER ${ROBOT_UID}:${ROBOT_GID}
 WORKDIR ${ROBOT_WORK_DIR}
 
 # Execute all robot tests
-CMD ["run-tests-in-virtual-screen.sh"]
+# CMD ["run-tests-in-virtual-screen.sh"]
